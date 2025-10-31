@@ -82,7 +82,8 @@ Students see all assignments in their "Work" tab, sorted by due date.
 
 #### 3. Student Submits Work
 Students can upload their work (PDF, images, etc.) and add a private comment for the teacher.
-[**ADD SCREENSHOT of the `submit_assignment_page.dart` with a file selected**]
+<img width="498" height="640" alt="image" src="https://github.com/user-attachments/assets/ef392b80-d8a5-4af8-bc9e-9f43a4cc07c5" />
+
 
 #### 4. Teacher Views Submissions
 The teacher's dashboard lists all student submissions for each assignment. They can view the file and see the student's comments.
