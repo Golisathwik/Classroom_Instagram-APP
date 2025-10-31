@@ -4,12 +4,16 @@
 
 This project was built for the **JBIET HackX 2025** hackathon.
 
+![Image](https://github.com/user-attachments/assets/5975b907-88b6-4afa-80ac-bf234cff6369)
+
 ---
 
 ## 🚀 Live Demo & Video
 
 * **Live Web App:** [**ADD YOUR FIREBASE HOSTING URL HERE**]
-* **Video Walkthrough (2 Mins):** [**ADD YOUR YOUTUBE/LOOM LINK HERE**]
+* **Video Walkthrough (2 Mins):**
+
+
 
 > **Note to Evaluators:** A video walkthrough is the best way to see all the features (including both Student and Teacher roles) in action!
 
@@ -36,7 +40,7 @@ The app provides a completely different, tailored UI depending on the user's rol
 | **Student Dashboard** | **Teacher Dashboard** |
 | :---: | :---: |
 | A 4-tab navigation for `Home`, `Work`, `AI Study`, and `Profile`. Designed for consumption and interaction. | A 3-tab navigation with a center-docked "Create" button. Designed for content creation and management. |
-| [**ADD SCREENSHOT of the Student 4-tab navigation bar**] | [**ADD SCREENSHOT of the Teacher 3-tab navigation bar**] |
+| ![Image](https://github.com/user-attachments/assets/c4be0d86-b5c6-4458-b5a4-31d2d713672a) | ![Image](https://github.com/user-attachments/assets/b89f4f72-5ab5-4f41-83a2-1823e3abf2e2) |
 
 ### 2. The Social Feed (Posts, Likes & Comments)
 
