@@ -33,6 +33,16 @@ Traditional classroom management tools (like Google Classroom) are formal, rigid
 
 ## 🏆 Key Features
 
+### 1. Role-Based Authentication & Dashboards
+
+The app provides a completely different, tailored UI depending on the user's role. This is established during the **Sign Up** process, where a user must identify as either a Student or a Teacher. This role is then saved to Firestore and controls the entire app experience.
+
+| **Sign Up (with Role Selection)** | **Student Dashboard** | **Teacher Dashboard** |
+| :---: | :---: | :---: |
+| The beautiful login screen includes a toggle that appears during sign-up, allowing users to select their role. | Students get a 4-tab view focused on consuming content, viewing work, and using the AI study tool. | Teachers get a 3-tab view with a center "Create" button, focused on posting assignments and managing grades. |
+| ![IMG-20251031-WA0013](https://github.com/user-attachments/assets/f745b029-74aa-4723-940a-c7d189de7b4a)
+
+ | ![Image](https://github.com/user-attachments/assets/c4be0d86-b5c6-4458-b5a4-31d2d713672a) | ![Image](https://github.com/user-attachments/assets/b89f4f72-5ab5-4f41-83a2-1823e3abf2e2) |
 ### 1. Role-Based Dashboards (Student vs. Teacher)
 
 The app provides a completely different, tailored UI depending on the user's role, which is selected at sign-up.
