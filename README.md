@@ -89,3 +89,29 @@ The teacher can post a mark (e.g., "A+" or "95/100") directly from the submissio
 #### 6. Student Views Grade
 The student can go to their "My Marks" page to see all their grades in one place.
 [**ADD SCREENSHOT of the `my_marks_page.dart` showing the student's new grade**]
+
+
+## 🔄 System Workflow
+
+We use Firebase for robust authentication and a role-based system to direct users to the correct experience. When a user logs in, the app checks their "role" in Firestore (`student` or `teacher`) and provides the correct navigation shell for their tasks.
+
+```mermaid
+graph TD;
+    A[User Enters App] --> B{Is Logged In?};
+    B -- No --> C[LoginPage];
+    C -- Signs Up (as Student) --> D[Create 'users' doc (role: student)];
+    C -- Signs Up (as Teacher) --> E[Create 'users' doc (role: teacher)];
+    B -- Yes --> F[RoleGate];
+    F -- Reads 'users' doc --> G{Role?};
+    
+    G -- "student" --> H[StudentNavigationShell];
+    H --> H1[Social Feed];
+    H --> H2[Assignments Page];
+    H --> H3[AI Study Page];
+    H --> H4[Profile Page];
+    
+    G -- "teacher" --> I[TeacherNavigationShell];
+    I --> I1[Teacher Dashboard (Assignment List)];
+    I --> I2[Post Marks Page];
+    I --> I3[Profile Page];
+    I -- FAB --> I4[Create Assignment Page];
