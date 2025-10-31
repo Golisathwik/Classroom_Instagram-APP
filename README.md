@@ -103,7 +103,79 @@ The student can go to their "My Marks" page to see all their grades in one place
 
 ![IMG-20251031-WA0027](https://github.com/user-attachments/assets/b5b2e8e0-696d-4747-bcfd-6cdaa714b13c)
 
+## Tinker
+ 🛠️ Technology Stack
 
+| Category | Technology |
+| :--- | :--- |
+| **Frontend** | Flutter (cross-platform for Web, iOS, & Android) |
+| **Backend** | Firebase (Authentication, Firestore, Storage) |
+| **AI** | Google AI Studio (Gemini API) |
+| **Key Packages** | `firebase_core`, `cloud_firestore`, `firebase_storage`, `file_picker`, `image_picker`, `google_generative_ai`, `intl`, `timeago` |
+
+---
+
+# 🏛️ Project Architecture & Database Schema
+
+This document outlines the high-level architecture and database structure for the Classroom Instagram app.
+
+## 1. System Architecture
+
+The app uses a **Flutter frontend** with a **Firebase backend**. This is a classic "serverless" model that allows for rapid development, real-time data, and high scalability.
+
+* **Flutter:** Handles all UI and business logic.
+* **Firebase Authentication:** Manages user sign-up, login, and identity.
+* **Cloud Firestore:** Acts as our main NoSQL database for all app data.
+* **Firebase Storage:** Used to host and serve user-uploaded images and files (like assignment submissions).
+* **Google Gemini API:** Provides AI-powered features like the flashcard generator.
+
+## 2. Cloud Firestore Schema
+
+This diagram shows how our data collections are organized in Firestore.
+
+```mermaid
+graph TD;
+    subgraph "Root"
+        C1[users]
+        C2[posts]
+        C3[assignments]
+    end
+
+    C1 -- doc/userId --> U["User Document<br/>role: student/teacher<br/>email: user@email.com"]
+
+    C2 -- doc/postId --> P["Post Document<br/>text: Hello...<br/>imageUrl: ...<br/>likes: [...]<br/>commentCount: 5"]
+
+    C3 -- doc/assignmentId --> A["Assignment Document<br/>title: History Essay<br/>dueDate: ...<br/>teacherId: ..."]
+
+    P -- subcollection --> C4[comments]
+    C4 -- doc/commentId --> CM["Comment Document<br/>text: Great post!<br/>userEmail: ..."]
+
+    A -- subcollection --> C5[submissions]
+    C5 -- doc/studentId --> S["Submission Document<br/>fileUrl: ...<br/>fileName: essay.pdf<br/>grade: A-"]
+
+```
+
+---
+
+
+## 🏃 How to Run Locally
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [YOUR_REPO_URL]
+    ```
+2.  **Get packages:**
+    ```bash
+    flutter pub get
+    ```
+3.  **Connect to your own Firebase project:**
+    ```bash
+    flutterfire configure
+    ```
+4.  **Run the app (on Chrome):**
+    ```bash
+    flutter run -d chrome
+    ```
 
 ## 🔄 System Workflow
 
@@ -129,35 +201,15 @@ graph TD;
     I --> I2[Post Marks Page];
     I --> I3[Profile Page];
     I -- FAB --> I4[Create Assignment Page];
-
-
-## Tinker
- 🛠️ Technology Stack
-
-| Category | Technology |
-| :--- | :--- |
-| **Frontend** | Flutter (cross-platform for Web, iOS, & Android) |
-| **Backend** | Firebase (Authentication, Firestore, Storage) |
-| **AI** | Google AI Studio (Gemini API) |
-| **Key Packages** | `firebase_core`, `cloud_firestore`, `firebase_storage`, `file_picker`, `image_picker`, `google_generative_ai`, `intl`, `timeago` |
-
+```
 ---
 
-## 🏃 How to Run Locally
+## 🔮 Future Roadmap
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [YOUR_REPO_URL]
-    ```
-2.  **Get packages:**
-    ```bash
-    flutter pub get
-    ```
-3.  **Connect to your own Firebase project:**
-    ```bash
-    flutterfire configure
-    ```
-4.  **Run the app (on Chrome):**
-    ```bash
-    flutter run -d chrome
-    ```
+Given more time, we would love to expand the platform's features:
+
+* **Attendance Module:** A "check-in" button for students that allows teachers to take attendance in real-time.
+* **AI-Powered Moderation:** Use an AI model to automatically flag inappropriate language in posts or comments.
+* **Direct Messaging:** A chat system for student-to-student and student-to-teacher communication.
+* **Push Notifications:** Send real-time push notifications for new grades, assignments, and comments.
+* **Calendar Integration:** A full calendar view that automatically populates with assignment due dates.
