@@ -52,7 +52,7 @@ A real-time, Instagram-style feed where teachers and students can post updates.
 
 | **Main Feed** | **Comments Page** |
 | :---: | :---: |
-| [**ADD SCREENSHOT of the `feed_page.dart` showing a post with a full-width image and like/comment buttons**] | [**ADD SCREENSHOT of the `comments_page.dart` showing a list of comments for a post**] |
+| ![Image](https://github.com/user-attachments/assets/d60c67e2-0706-4a7a-beac-89b96ff2cd24) | ![Image](https://github.com/user-attachments/assets/5cfbd1ab-2efa-4ff9-ac05-be82cbd96a4c) |
 
 ### 3. "Wow" Feature: AI Study Buddy
 
@@ -60,7 +60,7 @@ An integrated AI tool to help students study. Using the **Google Gemini API**, s
 
 | **Input Notes** | **Generated Flashcards** |
 | :---: | :---: |
-| [**ADD SCREENSHOT of the `ai_flashcard_page.dart` with notes pasted into the text field**] | [**ADD SCREENSHOT of the AI's generated Q&A flashcard output**] |
+| ![Image](https://github.com/user-attachments/assets/a90a1ab7-acd5-4fa0-90f2-400b289c852d) | ![Image](https://github.com/user-attachments/assets/4c194366-aa3e-465b-ad5f-54e774674d12) |
 
 ### 4. The Complete Academic Loop (End-to-End)
 
