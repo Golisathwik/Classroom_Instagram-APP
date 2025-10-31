@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "971157123069",
+    "project_id": "classroom-instagram-app",
+    "storage_bucket": "classroom-instagram-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:971157123069:android:295734acb66ad5d232f394",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQU9zrwVaCeM8jclEgIGf6OY9YDsw4BwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
