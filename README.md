@@ -42,10 +42,9 @@ The app provides a completely different, tailored UI depending on the user's rol
 | :---: | :---: | :---: |
 | The beautiful login screen includes a toggle that appears during sign-up, allowing users to select their role. | Students get a 4-tab view focused on consuming content, viewing work, and using the AI study tool. | Teachers get a 3-tab view with a center "Create" button, focused on posting assignments and managing grades. |
 | ![IMG-20251031-WA0013](https://github.com/user-attachments/assets/f745b029-74aa-4723-940a-c7d189de7b4a)
-
- | ![IMG-20251031-WA0016](https://github.com/user-attachments/assets/cd15a552-33bf-45d7-8664-5a51fe9de60b)
- | ![IMG-20251031-WA0024](https://github.com/user-attachments/assets/f93e5b6e-9164-419d-bd8d-3f908df06dd6)
- |
+| ![IMG-20251031-WA0016](https://github.com/user-attachments/assets/cd15a552-33bf-45d7-8664-5a51fe9de60b)
+| ![IMG-20251031-WA0024](https://github.com/user-attachments/assets/f93e5b6e-9164-419d-bd8d-3f908df06dd6)
+|
 
 ### 2. The Social Feed (Posts, Likes & Comments)
 
