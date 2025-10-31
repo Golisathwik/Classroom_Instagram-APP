@@ -129,3 +129,35 @@ graph TD;
     I --> I2[Post Marks Page];
     I --> I3[Profile Page];
     I -- FAB --> I4[Create Assignment Page];
+
+
+## Tinker
+ 🛠️ Technology Stack
+
+| Category | Technology |
+| :--- | :--- |
+| **Frontend** | Flutter (cross-platform for Web, iOS, & Android) |
+| **Backend** | Firebase (Authentication, Firestore, Storage) |
+| **AI** | Google AI Studio (Gemini API) |
+| **Key Packages** | `firebase_core`, `cloud_firestore`, `firebase_storage`, `file_picker`, `image_picker`, `google_generative_ai`, `intl`, `timeago` |
+
+---
+
+## 🏃 How to Run Locally
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [YOUR_REPO_URL]
+    ```
+2.  **Get packages:**
+    ```bash
+    flutter pub get
+    ```
+3.  **Connect to your own Firebase project:**
+    ```bash
+    flutterfire configure
+    ```
+4.  **Run the app (on Chrome):**
+    ```bash
+    flutter run -d chrome
+    ```
