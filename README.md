@@ -158,25 +158,6 @@ graph TD;
 ---
 
 
-## 🏃 How to Run Locally
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [YOUR_REPO_URL]
-    ```
-2.  **Get packages:**
-    ```bash
-    flutter pub get
-    ```
-3.  **Connect to your own Firebase project:**
-    ```bash
-    flutterfire configure
-    ```
-4.  **Run the app (on Chrome):**
-    ```bash
-    flutter run -d chrome
-    ```
-
 ## 🔄 System Workflow
 
 We use Firebase for robust authentication and a role-based system to direct users to the correct experience. When a user logs in, the app checks their "role" in Firestore (`student` or `teacher`) and provides the correct navigation shell for their tasks.
