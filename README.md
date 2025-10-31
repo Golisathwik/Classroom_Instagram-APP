@@ -68,11 +68,12 @@ This is the core of the platform. We built the *entire* feedback loop for assign
 
 #### 1. Teacher Posts Assignment
 Teachers get a dedicated "Create Assignment" form with title, description, and a due date picker.
-[**ADD SCREENSHOT of the `create_assignment_page.dart` form**]
+![Image](https://github.com/user-attachments/assets/1dec7a52-e70d-4059-aa7f-e66718e768ec)
 
 #### 2. Student Views Assignment
 Students see all assignments in their "Work" tab, sorted by due date.
-[**ADD SCREENSHOT of the `assignments_page.dart` showing a list of assignments**]
+![IMG-20251031-WA0016](https://github.com/user-attachments/assets/c3f6358f-da48-4f20-b18f-4d1c61770f5b)
+
 
 #### 3. Student Submits Work
 Students can upload their work (PDF, images, etc.) and add a private comment for the teacher.
@@ -80,15 +81,17 @@ Students can upload their work (PDF, images, etc.) and add a private comment for
 
 #### 4. Teacher Views Submissions
 The teacher's dashboard lists all student submissions for each assignment. They can view the file and see the student's comments.
-[**ADD SCREENSHOT of the `view_submissions_page.dart` showing the list of students who submitted**]
+![WhatsApp Image 2025-11-01 at 00 17 18_669cebfd](https://github.com/user-attachments/assets/c368a497-da2b-4edb-b081-eb80e8572606)
 
 #### 5. Teacher Posts Grade
 The teacher can post a mark (e.g., "A+" or "95/100") directly from the submissions page.
-[**ADD SCREENSHOT of the "Post Mark" pop-up dialog**]
+![IMG-20251031-WA0028](https://github.com/user-attachments/assets/45624ccb-b17b-4dca-9a92-7fe1a3deafa1)
+
 
 #### 6. Student Views Grade
 The student can go to their "My Marks" page to see all their grades in one place.
-[**ADD SCREENSHOT of the `my_marks_page.dart` showing the student's new grade**]
+![IMG-20251031-WA0023](https://github.com/user-attachments/assets/0f73257a-5df5-48f1-963a-f18a548b47c0)
+
 
 
 ## 🔄 System Workflow
