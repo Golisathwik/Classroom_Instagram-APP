@@ -1,2 +1,87 @@
-# Classroom_Instagram-APP
-Clasroom_Instagram app designed to make classroom interations more visual and community driven similar to instagram,but focus entirely on education.
+# 📸 Classroom Instagram
+
+**A Smart Academic Engagement Platform. Combining the best of social media with the structure of a classroom.**
+
+This project was built for the **JBIET HackX 2025** hackathon.
+
+---
+
+## 🚀 Live Demo & Video
+
+* **Live Web App:** [**ADD YOUR FIREBASE HOSTING URL HERE**]
+* **Video Walkthrough (2 Mins):** [**ADD YOUR YOUTUBE/LOOM LINK HERE**]
+
+> **Note to Evaluators:** A video walkthrough is the best way to see all the features (including both Student and Teacher roles) in action!
+
+---
+
+## 🎯 The Problem
+
+Traditional classroom management tools (like Google Classroom) are formal, rigid, and non-engaging. Students rarely interact beyond submitting assignments, leading to low motivation. Meanwhile, students are highly active on social media platforms, which foster creativity, peer interaction, and instant updates.
+
+## ✨ Our Solution
+
+"Classroom Instagram" is an AI-powered academic social platform that works like Instagram for the classroom. It's visual, interactive, and engaging.
+
+* Teachers can post academic notices, assignments, marks, and attendance.
+* Students can interact with posts, submit work, and view their grades.
+* A built-in AI assistant helps students study by generating flashcards from notes.
+
+## 🏆 Key Features
+
+### 1. Role-Based Dashboards (Student vs. Teacher)
+
+The app provides a completely different, tailored UI depending on the user's role, which is selected at sign-up.
+
+| **Student Dashboard** | **Teacher Dashboard** |
+| :---: | :---: |
+| A 4-tab navigation for `Home`, `Work`, `AI Study`, and `Profile`. Designed for consumption and interaction. | A 3-tab navigation with a center-docked "Create" button. Designed for content creation and management. |
+| [**ADD SCREENSHOT of the Student 4-tab navigation bar**] | [**ADD SCREENSHOT of the Teacher 3-tab navigation bar**] |
+
+### 2. The Social Feed (Posts, Likes & Comments)
+
+A real-time, Instagram-style feed where teachers and students can post updates.
+
+* **Full-Width Image Posts:** Images are displayed in their full aspect ratio, just like a modern social app.
+* **Real-time Likes:** Tap the heart, and the count updates instantly for everyone, powered by Firestore.
+* **Real-time Comments:** A full comment section for each post.
+
+| **Main Feed** | **Comments Page** |
+| :---: | :---: |
+| [**ADD SCREENSHOT of the `feed_page.dart` showing a post with a full-width image and like/comment buttons**] | [**ADD SCREENSHOT of the `comments_page.dart` showing a list of comments for a post**] |
+
+### 3. "Wow" Feature: AI Study Buddy
+
+An integrated AI tool to help students study. Using the **Google Gemini API**, students can paste in their lecture notes and instantly receive a set of Q&A flashcards.
+
+| **Input Notes** | **Generated Flashcards** |
+| :---: | :---: |
+| [**ADD SCREENSHOT of the `ai_flashcard_page.dart` with notes pasted into the text field**] | [**ADD SCREENSHOT of the AI's generated Q&A flashcard output**] |
+
+### 4. The Complete Academic Loop (End-to-End)
+
+This is the core of the platform. We built the *entire* feedback loop for assignments.
+
+#### 1. Teacher Posts Assignment
+Teachers get a dedicated "Create Assignment" form with title, description, and a due date picker.
+[**ADD SCREENSHOT of the `create_assignment_page.dart` form**]
+
+#### 2. Student Views Assignment
+Students see all assignments in their "Work" tab, sorted by due date.
+[**ADD SCREENSHOT of the `assignments_page.dart` showing a list of assignments**]
+
+#### 3. Student Submits Work
+Students can upload their work (PDF, images, etc.) and add a private comment for the teacher.
+[**ADD SCREENSHOT of the `submit_assignment_page.dart` with a file selected**]
+
+#### 4. Teacher Views Submissions
+The teacher's dashboard lists all student submissions for each assignment. They can view the file and see the student's comments.
+[**ADD SCREENSHOT of the `view_submissions_page.dart` showing the list of students who submitted**]
+
+#### 5. Teacher Posts Grade
+The teacher can post a mark (e.g., "A+" or "95/100") directly from the submissions page.
+[**ADD SCREENSHOT of the "Post Mark" pop-up dialog**]
+
+#### 6. Student Views Grade
+The student can go to their "My Marks" page to see all their grades in one place.
+[**ADD SCREENSHOT of the `my_marks_page.dart` showing the student's new grade**]
