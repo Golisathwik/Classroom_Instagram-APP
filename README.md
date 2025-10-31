@@ -102,10 +102,10 @@ We use Firebase for robust authentication and a role-based system to direct user
 graph TD;
     A[User Enters App] --> B{Is Logged In?};
     B -- No --> C[LoginPage];
-    C -- Signs Up (as Student) --> D[Create users doc (role: student)];
-    C -- Signs Up (as Teacher) --> E[Create users doc (role: teacher)];
+    C -- Signs Up as Student --> D[Create student user doc];
+    C -- Signs Up as Teacher --> E[Create teacher user doc];
     B -- Yes --> F[RoleGate];
-    F -- Reads users doc --> G{Role?};
+    F -- Reads user doc --> G{Role?};
     
     G -- "student" --> H[StudentNavigationShell];
     H --> H1[Social Feed];
@@ -114,7 +114,7 @@ graph TD;
     H --> H4[Profile Page];
     
     G -- "teacher" --> I[TeacherNavigationShell];
-    I --> I1[Teacher Dashboard (Assignment List)];
+    I --> I1[Teacher Dashboard];
     I --> I2[Post Marks Page];
     I --> I3[Profile Page];
     I -- FAB --> I4[Create Assignment Page];
