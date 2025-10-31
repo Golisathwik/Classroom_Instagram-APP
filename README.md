@@ -9,14 +9,9 @@ This project was built for the **JBIET HackX 2025** hackathon.
 
 ---
 
-## 🚀 Live Demo & Video
+## 🚀 Live Demo
 
-* **Live Web App:** [**ADD YOUR FIREBASE HOSTING URL HERE**]
-* **Video Walkthrough (2 Mins):**
-
-
-
-> **Note to Evaluators:** A video walkthrough is the best way to see all the features (including both Student and Teacher roles) in action!
+* **Live Web App:** (https://classroom-instagram-app.web.app/)
 
 ---
 
