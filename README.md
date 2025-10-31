@@ -41,7 +41,7 @@ The app provides a completely different, tailored UI depending on the user's rol
 | **Sign Up (with Role Selection)** | **Student Dashboard** | **Teacher Dashboard** |
 | :---: | :---: | :---: |
 | The beautiful login screen includes a toggle that appears during sign-up, allowing users to select their role. | Students get a 4-tab view focused on consuming content, viewing work, and using the AI study tool. | Teachers get a 3-tab view with a center "Create" button, focused on posting assignments and managing grades. |
-| ![IMG-20251031-WA0013](https://github.com/user-attachments/assets/f745b029-74aa-4723-940a-c7d189de7b4a) | ![IMG-20251031-WA0016](https://github.com/user-attachments/assets/cd15a552-33bf-45d7-8664-5a51fe9de60b) | ![IMG-20251031-WA0024](https://github.com/user-attachments/assets/f93e5b6e-9164-419d-bd8d-3f908df06dd6) |
+| ![IMG-20251031-WA0013](https://github.com/user-attachments/assets/f745b029-74aa-4723-940a-c7d189de7b4a) | ![IMG-20251031-WA0015](https://github.com/user-attachments/assets/610607d1-9312-4e1e-89e0-f5b9f7366ac5) | ![IMG-20251031-WA0024](https://github.com/user-attachments/assets/f93e5b6e-9164-419d-bd8d-3f908df06dd6) |
 
 ### 2. The Social Feed (Posts, Likes & Comments)
 
@@ -53,7 +53,7 @@ A real-time, Instagram-style feed where teachers and students can post updates.
 
 | **Main Feed** | **Comments Page** |
 | :---: | :---: |
-| ![Image](https://github.com/user-attachments/assets/d60c67e2-0706-4a7a-beac-89b96ff2cd24) | ![Image](https://github.com/user-attachments/assets/5cfbd1ab-2efa-4ff9-ac05-be82cbd96a4c) |
+| ![IMG-20251031-WA0033](https://github.com/user-attachments/assets/8712fc85-6e5a-4880-89d6-59b6419c6fa5)  |  ![WhatsApp Image 2025-10-31 at 23 28 26_bd7a08c0](https://github.com/user-attachments/assets/7f570a4c-1823-411c-a872-52138813a5e2)  |
 
 ### 3. "Wow" Feature: AI Study Buddy
 
@@ -61,7 +61,7 @@ An integrated AI tool to help students study. Using the **Google Gemini API**, s
 
 | **Input Notes** | **Generated Flashcards** |
 | :---: | :---: |
-| ![Image](https://github.com/user-attachments/assets/a90a1ab7-acd5-4fa0-90f2-400b289c852d) | ![Image](https://github.com/user-attachments/assets/4c194366-aa3e-465b-ad5f-54e774674d12) |
+| ![IMG-20251031-WA0017](https://github.com/user-attachments/assets/7d5a0dfa-6935-4091-aa65-ee21557399fd) | ![IMG-20251031-WA0018](https://github.com/user-attachments/assets/045bcd75-afbb-4e70-bbfc-1d2f51a3bd03) |
 
 ### 4. The Complete Academic Loop (End-to-End)
 
@@ -69,11 +69,12 @@ This is the core of the platform. We built the *entire* feedback loop for assign
 
 #### 1. Teacher Posts Assignment
 Teachers get a dedicated "Create Assignment" form with title, description, and a due date picker.
-![Image](https://github.com/user-attachments/assets/1dec7a52-e70d-4059-aa7f-e66718e768ec)
+![IMG-20251031-WA0025](https://github.com/user-attachments/assets/05646167-ceb5-4b54-b35c-4a50b5d1ebab)
+
 
 #### 2. Student Views Assignment
 Students see all assignments in their "Work" tab, sorted by due date.
-![IMG-20251031-WA0016](https://github.com/user-attachments/assets/c3f6358f-da48-4f20-b18f-4d1c61770f5b)
+![Image](https://github.com/user-attachments/assets/0aff0e30-573b-4a1e-ba13-df40ebfccd27)
 
 
 #### 3. Student Submits Work
@@ -83,11 +84,13 @@ Students can upload their work (PDF, images, etc.) and add a private comment for
 
 #### 4. Teacher Views Submissions
 The teacher's dashboard lists all student submissions for each assignment. They can view the file and see the student's comments.
-![WhatsApp Image 2025-11-01 at 00 17 18_669cebfd](https://github.com/user-attachments/assets/c368a497-da2b-4edb-b081-eb80e8572606)
+![WhatsApp Image 2025-11-01 at 00 17 18_669cebfd](https://github.com/user-attachments/assets/d057f255-c287-47c2-800a-26b4837dac6d)
+
 
 #### 5. Teacher Posts Grade
 The teacher can post a mark (e.g., "A+" or "95/100") directly from the submissions page.
-![IMG-20251031-WA0028](https://github.com/user-attachments/assets/45624ccb-b17b-4dca-9a92-7fe1a3deafa1)
+![IMG-20251031-WA0028](https://github.com/user-attachments/assets/2db9fc6e-e6d4-45a9-aa0b-d6a2070a8485)
+
 
 
 #### 6. Student Views Grade
