@@ -7,6 +7,7 @@ import 'ai_flashcard_page.dart';
 import 'teacher_home_page.dart'; 
 import 'create_assignment_page.dart'; 
 import 'assignments_page.dart';
+import 'create_post_page.dart'; // <--- IMPORT THIS
 
 class MainNavigationShell extends StatefulWidget {
   final String userRole;
@@ -22,7 +23,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   late List<Widget> _pages;
   late List<Widget> _navButtons;
-  FloatingActionButton? _floatingActionButton; // Nullable for student
+  FloatingActionButton? _floatingActionButton; 
 
   @override
   void initState() {
@@ -37,10 +38,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   void _setupStudentUI() {
     _pages = [
       const FeedPage(),
-      // Pass role to AssignmentsPage
       AssignmentsPage(userRole: widget.userRole), 
       const FlashcardPage(),
-      // Pass role to ProfilePage
       ProfilePage(userRole: widget.userRole), 
     ];
 
@@ -50,38 +49,45 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       _buildNavButton(icon: Icons.flash_on, label: 'AI Study', index: 2),
       _buildNavButton(icon: Icons.person, label: 'Profile', index: 3),
     ];
+
+    // --- NEW: Add the + Button for Students ---
+    _floatingActionButton = FloatingActionButton(
+      backgroundColor: Colors.black, // Instagram style black button
+      child: const Icon(Icons.add_a_photo, color: Colors.white),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CreatePostPage()),
+        );
+      },
+    );
   }
 
   void _setupTeacherUI() {
     _pages = [
       const TeacherHomePage(),
-      
-      // --- FIX: ADDED THIS PAGE ---
-      // Now the teacher can see the list of assignments and the Edit/Delete buttons
       AssignmentsPage(userRole: widget.userRole),
-      
       const FeedPage(),
       ProfilePage(userRole: widget.userRole), 
     ];
 
     _navButtons = [
       _buildNavButton(icon: Icons.dashboard, label: 'Dashboard', index: 0),
-      
-      // --- FIX: ADDED THIS BUTTON ---
       _buildNavButton(icon: Icons.assignment, label: 'Tasks', index: 1),
-      
       _buildNavButton(icon: Icons.article, label: 'Feed', index: 2),
       _buildNavButton(icon: Icons.person, label: 'Profile', index: 3),
     ];
 
+    // Teacher's "+" Button (Creates Assignment)
     _floatingActionButton = FloatingActionButton(
+      backgroundColor: Colors.blue,
+      child: const Icon(Icons.add, color: Colors.white),
       onPressed: () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const CreateAssignmentPage()),
         );
       },
-      child: const Icon(Icons.add),
     );
   }
 
@@ -92,26 +98,31 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         index: _selectedIndex,
         children: _pages,
       ),
+      // Show FAB for BOTH Students and Teachers now
       floatingActionButton: _floatingActionButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       
       bottomNavigationBar: BottomAppBar(
-        shape: widget.userRole == 'teacher' 
-            ? const CircularNotchedRectangle() 
-            : null,
+        shape: const CircularNotchedRectangle(), // Cutout for the button
         notchMargin: 6.0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: widget.userRole == 'teacher'
               ? [
-                  // Teacher Layout: 2 buttons, Gap, 2 buttons
                   _navButtons[0],
                   _navButtons[1],
-                  const SizedBox(width: 40), // Gap for FAB
+                  const SizedBox(width: 40), // Gap
                   _navButtons[2],
                   _navButtons[3],
                 ]
-              : _navButtons, // Student Layout: Even spacing
+              : [
+                  // Student Layout: 2 buttons, Gap, 2 buttons
+                  _navButtons[0],
+                  _navButtons[1],
+                  const SizedBox(width: 40), // Gap for the Create Post button
+                  _navButtons[2],
+                  _navButtons[3],
+                ], 
         ),
       ),
     );

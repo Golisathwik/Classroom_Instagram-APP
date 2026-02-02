@@ -1,6 +1,6 @@
 // lib/create_post_page.dart
 
-import 'dart:typed_data'; // Required for Uint8List
+import 'dart:io'; // Required for File
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,9 +18,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController _postController = TextEditingController();
   bool _isLoading = false;
 
-  // Variables to hold image data
-  Uint8List? _imageBytes; // For web/mobile compatibility
-  String? _imageName;
+  // Variables to hold image data (Fixed for Mobile Stability)
+  File? _imageFile; 
 
   // 1. Pick Image Function
   Future<void> _pickImage() async {
@@ -29,11 +28,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
     final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      // Read the file as bytes (works on Web and Mobile)
-      final bytes = await pickedFile.readAsBytes();
       setState(() {
-        _imageBytes = bytes;
-        _imageName = pickedFile.name;
+        // Use File object instead of bytes to prevent Out-Of-Memory crashes
+        _imageFile = File(pickedFile.path);
       });
     }
   }
@@ -41,7 +38,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   // 2. Create Post Function
   Future<void> _createPost() async {
     // Validation: Check if both text and image are empty
-    if (_postController.text.isEmpty && _imageBytes == null) {
+    if (_postController.text.isEmpty && _imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add text or an image.')),
       );
@@ -59,30 +56,29 @@ class _CreatePostPageState extends State<CreatePostPage> {
       String? downloadUrl;
 
       // --- STEP A: Upload Image to Storage (If one was selected) ---
-      if (_imageBytes != null && _imageName != null) {
+      if (_imageFile != null) {
         // Create a unique file name using timestamp
-        String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}_$_imageName';
+        String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
         
         // Create the reference to Firebase Storage
         Reference storageRef = FirebaseStorage.instance.ref().child('post_images').child(fileName);
 
-        // Upload the bytes with metadata (helps browser know it's an image)
-        final metadata = SettableMetadata(contentType: 'image/jpeg');
-        UploadTask uploadTask = storageRef.putData(_imageBytes!, metadata);
+        // Upload using putFile (Stream upload - Safe for large files)
+        UploadTask uploadTask = storageRef.putFile(_imageFile!);
 
         // Wait for upload to finish
         TaskSnapshot snapshot = await uploadTask;
 
-        // !!! CRITICAL FIX !!! 
-        // Get the public Link (https://...) not the file path
+        // Get the public Link
         downloadUrl = await snapshot.ref.getDownloadURL();
       }
 
       // --- STEP B: Save Post to Firestore ---
       await FirebaseFirestore.instance.collection('posts').add({
         'uid': user.uid,              // ID of the user posting
-        'caption': _postController.text, // The text content
-        'imageUrl': downloadUrl,      // The public https link (can be null if text-only)
+        'email': user.email,          // Store email for display
+        'caption': _postController.text.trim(), 
+        'imageUrl': downloadUrl,      // The public https link
         'timestamp': FieldValue.serverTimestamp(),
         'likes': [],                  // Initialize empty likes list
         'commentCount': 0,            // Initialize comment count
@@ -91,18 +87,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
       // Close the page on success
       if (mounted) {
         Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Posted successfully!')),
+        );
       }
 
     } catch (e) {
       // Handle Errors
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error posting: $e')),
         );
       }
+    } finally {
+      if (mounted) setState(() { _isLoading = false; });
     }
   }
 
@@ -113,6 +111,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
         title: const Text('Create New Post'),
         backgroundColor: Colors.white,
         elevation: 1.0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        titleTextStyle: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       backgroundColor: Colors.white,
       body: Padding(
@@ -131,7 +131,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(color: Colors.grey.shade300, width: 1.0),
                   ),
-                  child: _imageBytes == null
+                  child: _imageFile == null
                       // Show Icon if no image
                       ? const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,8 +144,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       // Show Image if selected
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(12.0),
-                          child: Image.memory(
-                            _imageBytes!,
+                          child: Image.file(
+                            _imageFile!, // Use Image.file for local files
                             fit: BoxFit.cover,
                           ),
                         ),

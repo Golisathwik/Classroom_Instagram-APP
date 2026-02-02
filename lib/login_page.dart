@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'main_navigation_shell.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,48 +24,94 @@ class _LoginPageState extends State<LoginPage> {
   String _userRole = 'student'; // Default
   final List<bool> _isSelected = [true, false]; // [Student, Teacher]
 
-  // --- 1. NEW: Forgot Password Function ---
+  // --- 1. Forgot Password Function ---
   Future<void> _resetPassword() async {
-    if (_emailController.text.isEmpty) {
+    // Check if email is empty
+    if (_emailController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your email to reset password.';
+        _errorMessage = 'Please enter your email address above to reset your password.';
       });
       return;
     }
 
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
+      
+      setState(() {
+        _errorMessage = ''; // Clear errors
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Password reset email sent! Check your inbox.'),
+            content: Text('Reset link sent! Check your Email (and Spam).'),
             backgroundColor: Colors.green,
           ),
         );
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        if (e.code == 'user-not-found') {
+          _errorMessage = 'No user found with this email.';
+        } else if (e.code == 'invalid-email') {
+          _errorMessage = 'Please enter a valid email address.';
+        } else {
+          _errorMessage = e.message ?? 'Error sending reset email.';
+        }
       });
     }
   }
 
-  // --- Main Authentication Function ---
+  // --- 2. Main Authentication Function ---
   Future<void> _authenticate() async {
+    // Clear previous errors
+    setState(() {
+      _errorMessage = '';
+    });
+
+    // Check for empty fields
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter both email and password.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
-      _errorMessage = '';
     });
 
     try {
       if (_isLoginView) {
-        // --- Log In ---
+        // --- LOG IN ---
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        
+        // After login, we need to fetch their role to navigate correctly
+        String role = 'student'; // Default
+        try {
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .get();
+          if (userDoc.exists) {
+            role = userDoc['role'] ?? 'student';
+          }
+        } catch (e) {
+          debugPrint('Error fetching role: $e');
+        }
+
+        if (mounted) {
+           Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainNavigationShell(userRole: role)),
+          );
+        }
+
       } else {
-        // --- Sign Up ---
+        // --- SIGN UP ---
         UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -77,14 +124,36 @@ class _LoginPageState extends State<LoginPage> {
           'uid': userCredential.user!.uid,
           'createdAt': FieldValue.serverTimestamp(),
         });
+
+        if (mounted) {
+           Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainNavigationShell(userRole: _userRole)),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
+      // --- CUSTOM ERROR HANDLING ---
+      String msg = 'An error occurred';
+      
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        msg = 'No account found with this email.';
+      } else if (e.code == 'wrong-password') {
+        msg = 'Incorrect password. Please try again.';
+      } else if (e.code == 'email-already-in-use') {
+        msg = 'This email is already registered. Try logging in.';
+      } else if (e.code == 'invalid-email') {
+        msg = 'The email address is invalid.';
+      } else if (e.code == 'weak-password') {
+        msg = 'Password is too weak. Use at least 6 characters.';
+      }
+
       setState(() {
-        _errorMessage = e.message ?? 'An error occurred';
+        _errorMessage = msg;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error: $e';
+        _errorMessage = 'Error: ${e.toString()}';
       });
     } finally {
       if (mounted) setState(() { _isLoading = false; });
@@ -149,7 +218,7 @@ class _LoginPageState extends State<LoginPage> {
               
               const SizedBox(height: 12.0),
 
-              // --- 2. NEW: Forgot Password Button (Only in Login Mode) ---
+              // --- Forgot Password Button (Only in Login Mode) ---
               if (_isLoginView)
                 Align(
                   alignment: Alignment.centerRight,
@@ -159,13 +228,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-              // Error Message
+              // --- Error Message Display ---
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 12.0),
                   child: Text(
                     _errorMessage,
-                    style: const TextStyle(color: Colors.red, fontSize: 14),
+                    style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -200,7 +269,9 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () {
                   setState(() {
                     _isLoginView = !_isLoginView;
-                    _errorMessage = '';
+                    _errorMessage = ''; // Clear errors when switching views
+                    _emailController.clear();
+                    _passwordController.clear();
                   });
                 },
                 child: Text(
