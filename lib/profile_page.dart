@@ -1,110 +1,163 @@
 // lib/profile_page.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'my_marks_page.dart'; // <-- ADD THIS
+import 'my_marks_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  final String userRole;
+
+  const ProfilePage({super.key, required this.userRole});
 
   @override
   Widget build(BuildContext context) {
-    // Get the current user
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.white,
-        elevation: 1.0,
+        title: const Text('Profile'), 
+        backgroundColor: Colors.white, 
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
+        titleTextStyle: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
       ),
-      backgroundColor: Colors.grey[100], // Light grey background
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              
-              // --- Profile Avatar ---
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.blue.shade100,
-                child: Text(
-                  user?.email?[0].toUpperCase() ?? 'U', // First letter of email
-                  style: const TextStyle(fontSize: 60, color: Colors.blue),
+      backgroundColor: Colors.grey[100],
+      body: SingleChildScrollView( 
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            
+            // --- SECTION 1: USER INFO ---
+            Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50, 
+                    backgroundColor: Colors.blue.shade100, 
+                    child: Text(
+                      user?.email?[0].toUpperCase() ?? 'U', 
+                      style: const TextStyle(fontSize: 40, color: Colors.blue)
+                    )
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    user?.email ?? 'No Email', 
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                  ),
+                  const SizedBox(height: 5),
+                  Chip(
+                    label: Text(
+                      userRole.toUpperCase(), 
+                      style: const TextStyle(color: Colors.white)
+                    ), 
+                    backgroundColor: Colors.blue
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // --- SECTION 2: BUTTONS ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                children: [
+                  // Only show "My Marks" if the user is a STUDENT
+                  if (userRole == 'student') ...[
+                    _buildProfileButton(
+                      icon: Icons.grade,
+                      text: 'My Marks',
+                      onTap: () {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => const MyMarksPage())
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  // Logout Button (For everyone)
+                  _buildProfileButton(
+                    icon: Icons.logout,
+                    text: 'Log Out',
+                    onTap: () {
+                      FirebaseAuth.instance.signOut();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            
+            // --- SECTION 3: MY POSTS (Only for Students) ---
+            if (userRole == 'student') ...[
+              const SizedBox(height: 30),
+              const Divider(thickness: 2),
+
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "My Posts", 
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              
-              // --- User Email ---
-              Text(
-                user?.email ?? 'Loading...',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
 
-              // --- Menu Buttons ---
-              // --- Menu Buttons ---
-              _buildProfileButton(
-                icon: Icons.assignment,
-                text: 'My Marks',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MyMarksPage()),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('posts')
+                    .where('uid', isEqualTo: user?.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(20), 
+                      child: Text("You haven't posted anything yet.", style: TextStyle(color: Colors.grey))
+                    );
+                  }
+                  
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, 
+                      crossAxisSpacing: 4, 
+                      mainAxisSpacing: 4
+                    ),
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      var data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                      
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          data['imageUrl'],
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => Container(color: Colors.grey[300], child: const Icon(Icons.error)),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
-              const SizedBox(height: 16),
-              _buildProfileButton(
-                icon: Icons.calendar_today,
-                text: 'My Attendance',
-                onTap: () {
-                  // TODO: Navigate to attendance page
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildProfileButton(
-                icon: Icons.settings,
-                text: 'Settings',
-                onTap: () {
-                  // TODO: Navigate to settings page
-                },
-              ),
-              const Spacer(), // Pushes logout button to the bottom
-
-              // --- Logout Button ---
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text(
-                    'Log Out',
-                    style: TextStyle(color: Colors.red, fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ], // End of Student Check
+            
+            const SizedBox(height: 50),
+          ],
         ),
       ),
     );
   }
 
-  // Helper widget for profile menu buttons
+  // --- CUSTOM BUTTON HELPER ---
   Widget _buildProfileButton({required IconData icon, required String text, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,

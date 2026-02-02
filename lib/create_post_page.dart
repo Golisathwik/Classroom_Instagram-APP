@@ -1,6 +1,6 @@
 // lib/create_post_page.dart
 
-import 'dart:typed_data'; // We need this to handle image bytes on web
+import 'dart:typed_data'; // Required for Uint8List
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,40 +11,36 @@ class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
 
   @override
-  State<CreatePostPage> createState() => _CreatePostPageSate();
+  State<CreatePostPage> createState() => _CreatePostPageState();
 }
 
-class _CreatePostPageSate extends State<CreatePostPage> {
+class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController _postController = TextEditingController();
   bool _isLoading = false;
-  
-  // --- THE FIX ---
-  // We'll store the image as bytes (Uint8List) instead of a File.
-  // This works on both web and mobile.
-  Uint8List? _imageBytes;
-  // --- END OF FIX ---
 
-  String? _imageName; // To give the file a name in Storage
+  // Variables to hold image data
+  Uint8List? _imageBytes; // For web/mobile compatibility
+  String? _imageName;
 
-  // Function to let the user pick an image
+  // 1. Pick Image Function
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
+    // Pick the image
     final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      // --- THE FIX ---
-      // Read the file as bytes
+      // Read the file as bytes (works on Web and Mobile)
       final bytes = await pickedFile.readAsBytes();
       setState(() {
         _imageBytes = bytes;
-        _imageName = pickedFile.name; // Save the original file name
+        _imageName = pickedFile.name;
       });
-      // --- END OF FIX ---
     }
   }
 
-  // Function to create the post
+  // 2. Create Post Function
   Future<void> _createPost() async {
+    // Validation: Check if both text and image are empty
     if (_postController.text.isEmpty && _imageBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add text or an image.')),
@@ -52,46 +48,61 @@ class _CreatePostPageSate extends State<CreatePostPage> {
       return;
     }
 
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      String? imageUrl;
+      String? downloadUrl;
 
-      // 1. If an image is selected, upload it to Firebase Storage
+      // --- STEP A: Upload Image to Storage (If one was selected) ---
       if (_imageBytes != null && _imageName != null) {
+        // Create a unique file name using timestamp
         String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}_$_imageName';
+        
+        // Create the reference to Firebase Storage
         Reference storageRef = FirebaseStorage.instance.ref().child('post_images').child(fileName);
 
-        // --- THE FIX ---
-        // Use putData() to upload bytes, instead of putFile()
-        // We also add metadata to tell Storage it's an image.
+        // Upload the bytes with metadata (helps browser know it's an image)
         final metadata = SettableMetadata(contentType: 'image/jpeg');
         UploadTask uploadTask = storageRef.putData(_imageBytes!, metadata);
-        // --- END OF FIX ---
 
+        // Wait for upload to finish
         TaskSnapshot snapshot = await uploadTask;
-        imageUrl = await snapshot.ref.getDownloadURL();
+
+        // !!! CRITICAL FIX !!! 
+        // Get the public Link (https://...) not the file path
+        downloadUrl = await snapshot.ref.getDownloadURL();
       }
 
-      // 2. Add the post data to Firestore
+      // --- STEP B: Save Post to Firestore ---
       await FirebaseFirestore.instance.collection('posts').add({
-        'userId': user.uid,
+        'uid': user.uid,              // ID of the user posting
+        'caption': _postController.text, // The text content
+        'imageUrl': downloadUrl,      // The public https link (can be null if text-only)
         'timestamp': FieldValue.serverTimestamp(),
-        'imageUrl': imageUrl,
-        'likes': [], // We should also initialize this!
-        'commentCount': 0, // <-- ADD THIS LINE
+        'likes': [],                  // Initialize empty likes list
+        'commentCount': 0,            // Initialize comment count
       });
 
-      if (mounted) { Navigator.pop(context); }
+      // Close the page on success
+      if (mounted) {
+        Navigator.pop(context);
+      }
 
     } catch (e) {
-      setState(() { _isLoading = false; });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to create post: $e')),
-      );
+      // Handle Errors
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error posting: $e')),
+        );
+      }
     }
   }
 
@@ -109,7 +120,7 @@ class _CreatePostPageSate extends State<CreatePostPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // --- 1. The Image Preview or "Pick Image" Box ---
+              // --- Image Preview Area ---
               GestureDetector(
                 onTap: _pickImage,
                 child: Container(
@@ -121,33 +132,28 @@ class _CreatePostPageSate extends State<CreatePostPage> {
                     border: Border.all(color: Colors.grey.shade300, width: 1.0),
                   ),
                   child: _imageBytes == null
-                      // If no image is selected, show this
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo_outlined, size: 50, color: Colors.grey),
-                              SizedBox(height: 8),
-                              Text('Tap to add a photo', style: TextStyle(color: Colors.grey)),
-                            ],
-                          ),
+                      // Show Icon if no image
+                      ? const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo_outlined, size: 50, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('Tap to add a photo', style: TextStyle(color: Colors.grey)),
+                          ],
                         )
-                      // If an image IS selected, show it
+                      // Show Image if selected
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(12.0),
-                          // --- THE FIX ---
-                          // Use Image.memory() to display bytes
                           child: Image.memory(
                             _imageBytes!,
                             fit: BoxFit.cover,
                           ),
-                          // --- END OF FIX ---
                         ),
                 ),
               ),
               const SizedBox(height: 24.0),
 
-              // --- 2. The Text Field ---
+              // --- Caption Text Field ---
               TextField(
                 controller: _postController,
                 decoration: InputDecoration(
@@ -163,11 +169,11 @@ class _CreatePostPageSate extends State<CreatePostPage> {
               ),
               const SizedBox(height: 24.0),
 
-              // --- 3. The "Post" Button ---
+              // --- Post Button ---
               _isLoading
                   ? const CircularProgressIndicator()
                   : SizedBox(
-                      width: double.infinity, // Button is full width
+                      width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _createPost,
                         style: ElevatedButton.styleFrom(

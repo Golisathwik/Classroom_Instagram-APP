@@ -3,15 +3,12 @@
 import 'package:flutter/material.dart';
 import 'feed_page.dart'; 
 import 'profile_page.dart';
-// import 'create_post_page.dart';
 import 'ai_flashcard_page.dart';
-import 'teacher_home_page.dart'; // We will use this soon
-import 'create_assignment_page.dart'; // We already have this
-import 'post_marks_page.dart'; 
-import 'assignments_page.dart'; // <-- ADD THIS IMPORT// We will create this
+import 'teacher_home_page.dart'; 
+import 'create_assignment_page.dart'; 
+import 'assignments_page.dart';
 
 class MainNavigationShell extends StatefulWidget {
-  // We will pass the user's role to this page
   final String userRole;
   
   const MainNavigationShell({super.key, required this.userRole});
@@ -23,15 +20,13 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _selectedIndex = 0;
 
-  // We need to store the pages and nav items
   late List<Widget> _pages;
   late List<Widget> _navButtons;
-  late FloatingActionButton _floatingActionButton;
+  FloatingActionButton? _floatingActionButton; // Nullable for student
 
   @override
   void initState() {
     super.initState();
-    // Build the correct UI based on the user's role
     if (widget.userRole == 'teacher') {
       _setupTeacherUI();
     } else {
@@ -39,55 +34,54 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     }
   }
 
-  // --- STUDENT UI ---
-  // --- STUDENT UI (Updated for 4 tabs) ---
   void _setupStudentUI() {
     _pages = [
       const FeedPage(),
-      const AssignmentsPage(), // <-- NEW
-      const FlashcardPage(), 
-      const ProfilePage(), 
+      // Pass role to AssignmentsPage
+      AssignmentsPage(userRole: widget.userRole), 
+      const FlashcardPage(),
+      // Pass role to ProfilePage
+      ProfilePage(userRole: widget.userRole), 
     ];
 
     _navButtons = [
-      _buildNavButton(icon: Icons.home, label: 'Home', index: 0),
-      _buildNavButton(icon: Icons.assignment, label: 'Work', index: 1), // <-- NEW
-      _buildNavButton(icon: Icons.psychology, label: 'AI Study', index: 2),
+      _buildNavButton(icon: Icons.home, label: 'Feed', index: 0),
+      _buildNavButton(icon: Icons.assignment, label: 'Tasks', index: 1),
+      _buildNavButton(icon: Icons.flash_on, label: 'AI Study', index: 2),
       _buildNavButton(icon: Icons.person, label: 'Profile', index: 3),
     ];
-
-    // --- REMOVED THE FLOATING ACTION BUTTON ---
-    _floatingActionButton = FloatingActionButton(
-      onPressed: () {
-        // This button is no longer visible on the student UI,
-        // but we'll leave it here to avoid errors.
-        // The "Create Post" button is now in the FeedPage AppBar.
-      },
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-    );
   }
 
-  // --- TEACHER UI ---
   void _setupTeacherUI() {
-     _pages = [
-      const TeacherHomePage(), // The dashboard we made
-      const PostMarksPage(),   // A new placeholder page
-      const ProfilePage(),     // Teachers need a profile page too
+    _pages = [
+      const TeacherHomePage(),
+      
+      // --- FIX: ADDED THIS PAGE ---
+      // Now the teacher can see the list of assignments and the Edit/Delete buttons
+      AssignmentsPage(userRole: widget.userRole),
+      
+      const FeedPage(),
+      ProfilePage(userRole: widget.userRole), 
     ];
 
     _navButtons = [
       _buildNavButton(icon: Icons.dashboard, label: 'Dashboard', index: 0),
-      _buildNavButton(icon: Icons.assignment_turned_in, label: 'Marks', index: 1),
-      _buildNavButton(icon: Icons.person, label: 'Profile', index: 2),
+      
+      // --- FIX: ADDED THIS BUTTON ---
+      _buildNavButton(icon: Icons.assignment, label: 'Tasks', index: 1),
+      
+      _buildNavButton(icon: Icons.article, label: 'Feed', index: 2),
+      _buildNavButton(icon: Icons.person, label: 'Profile', index: 3),
     ];
 
-     _floatingActionButton = FloatingActionButton(
+    _floatingActionButton = FloatingActionButton(
       onPressed: () {
-         Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateAssignmentPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CreateAssignmentPage()),
+        );
       },
-      backgroundColor: Colors.blue,
-      child: const Icon(Icons.assignment_add, color: Colors.white),
+      child: const Icon(Icons.add),
     );
   }
 
@@ -98,12 +92,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         index: _selectedIndex,
         children: _pages,
       ),
-
       floatingActionButton: _floatingActionButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
+      
       bottomNavigationBar: BottomAppBar(
-        // This line adds the notch *only* for the teacher
         shape: widget.userRole == 'teacher' 
             ? const CircularNotchedRectangle() 
             : null,
@@ -111,23 +103,20 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: widget.userRole == 'teacher'
-              
-              // --- TEACHER 3-BUTTON UI (with a gap for the FAB) ---
               ? [
+                  // Teacher Layout: 2 buttons, Gap, 2 buttons
                   _navButtons[0],
                   _navButtons[1],
-                  const SizedBox(width: 40), // The gap
+                  const SizedBox(width: 40), // Gap for FAB
                   _navButtons[2],
+                  _navButtons[3],
                 ]
-              
-              // --- STUDENT 4-BUTTON UI (no gap) ---
-              : _navButtons, 
+              : _navButtons, // Student Layout: Even spacing
         ),
       ),
     );
   }
 
-  // Helper widget to build a navigation button
   Widget _buildNavButton({required IconData icon, required String label, required int index}) {
     return MaterialButton(
       minWidth: 40,
@@ -144,6 +133,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             label,
             style: TextStyle(
               color: _selectedIndex == index ? Colors.blue : Colors.grey,
+              fontSize: 10,
             ),
           ),
         ],

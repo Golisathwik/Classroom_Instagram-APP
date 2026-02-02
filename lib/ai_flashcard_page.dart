@@ -7,7 +7,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 // Go to Google AI Studio to get your API key.
 // DO NOT put your API key here in a real app. Use environment variables.
 // But for a hackathon, this is the quickest way.
-const String _apiKey = "[enter your api key]";
+const String _apiKey = "AIzaSyAzmmNYm7TjcroFMkJPREN8Vx1ewDl_N4g";
 
 class FlashcardPage extends StatefulWidget {
   const FlashcardPage({super.key});

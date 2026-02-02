@@ -1,6 +1,6 @@
 // lib/submit_assignment_page.dart
 
-import 'dart:typed_data';
+import 'dart:io'; 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -25,8 +25,7 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
   final _commentController = TextEditingController();
   bool _isLoading = false;
 
-  // FilePicker data
-  Uint8List? _fileBytes;
+  File? _selectedFile;
   String? _fileName;
 
   // Function to pick a file
@@ -35,16 +34,13 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png'],
-        withData: true, // This is crucial for web
       );
 
-      if (result != null && result.files.first.bytes != null) {
+      if (result != null && result.files.single.path != null) {
         setState(() {
-          _fileBytes = result.files.first.bytes;
-          _fileName = result.files.first.name;
+          _selectedFile = File(result.files.single.path!);
+          _fileName = result.files.single.name;
         });
-      } else {
-        // User canceled the picker
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,7 +51,7 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
 
   // Function to submit the assignment
   Future<void> _submitAssignment() async {
-    if (_fileBytes == null || _fileName == null) {
+    if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a file to submit.')),
       );
@@ -68,44 +64,46 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
     setState(() { _isLoading = true; });
 
     try {
-      // 1. Upload the file to Firebase Storage
+      // 1. UPLOAD FILE
       String filePath = 'submissions/${widget.assignmentId}/${user.uid}/$_fileName';
       Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
       
-      final metadata = SettableMetadata(contentType: 'application/octet-stream');
-      UploadTask uploadTask = storageRef.putData(_fileBytes!, metadata);
-      
+      UploadTask uploadTask = storageRef.putFile(_selectedFile!);
       TaskSnapshot snapshot = await uploadTask;
       String fileUrl = await snapshot.ref.getDownloadURL();
 
-      // 2. Create the submission document in Firestore
-      // We'll store this in a subcollection under the assignment
+      // 2. SAVE TO FIRESTORE
       await FirebaseFirestore.instance
           .collection('assignments')
           .doc(widget.assignmentId)
           .collection('submissions')
-          .doc(user.uid) // Use the user's ID as the doc ID
+          .doc(user.uid)
           .set({
             'studentId': user.uid,
+            'studentName': user.email, // <--- CHANGED: Using Email only
             'studentEmail': user.email,
             'fileUrl': fileUrl,
             'fileName': _fileName,
-            'comment': _commentController.text,
+            'comment': _commentController.text.trim(),
             'submittedAt': FieldValue.serverTimestamp(),
+            'grade': 'Not Graded',
           });
 
       if (mounted) {
-        Navigator.pop(context); // Go back to the assignment list
+        Navigator.pop(context); // Go back
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Assignment submitted successfully!')),
         );
       }
 
     } catch (e) {
-      setState(() { _isLoading = false; });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() { _isLoading = false; });
     }
   }
 
@@ -116,6 +114,8 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
         title: const Text('Submit Work'),
         backgroundColor: Colors.white,
         elevation: 1.0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        titleTextStyle: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       backgroundColor: Colors.white,
       body: Padding(
@@ -139,7 +139,10 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(color: Colors.grey.shade300, width: 1.0, style: BorderStyle.solid),
+                    border: Border.all(
+                      color: _selectedFile != null ? Colors.green : Colors.grey.shade300, 
+                      width: 2.0
+                    ),
                   ),
                   child: Center(
                     child: _fileName == null
@@ -156,7 +159,11 @@ class _SubmitAssignmentPageState extends State<SubmitAssignmentPage> {
                             children: [
                               const Icon(Icons.check_circle, size: 50, color: Colors.green),
                               const SizedBox(height: 8),
-                              Text(_fileName!, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                              Text(
+                                _fileName!, 
+                                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
                             ],
                           ),
                   ),

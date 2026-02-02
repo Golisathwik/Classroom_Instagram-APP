@@ -4,14 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'comments_page.dart'; // <-- ADD THIS IMPORT
+import 'comments_page.dart'; 
 
 class PostCard extends StatefulWidget {
   final Map<String, dynamic> postData;
-  final String postId; 
+  final String postId;
 
   const PostCard({
-    super.key, 
+    super.key,
     required this.postData,
     required this.postId,
   });
@@ -24,28 +24,24 @@ class _PostCardState extends State<PostCard> {
   late List<dynamic> likes;
   late bool isLiked;
   late int likeCount;
-  String? currentUserId;
-  
-  // --- NEW: Add commentCount state ---
   late int commentCount;
-  // --- END NEW ---
+  String? currentUserId;
 
   @override
   void initState() {
     super.initState();
     currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    
-    // Set the initial state from the post data
+
+    // 1. Initialize Likes
     likes = widget.postData['likes'] ?? [];
     likeCount = likes.length;
     isLiked = (currentUserId != null) ? likes.contains(currentUserId) : false;
-    
-    // --- NEW: Initialize commentCount ---
+
+    // 2. Initialize Comments
     commentCount = widget.postData['commentCount'] ?? 0;
-    // --- END NEW ---
   }
 
-  // --- LIKE/UNLIKE LOGIC (no change here) ---
+  // --- LIKE LOGIC ---
   Future<void> _toggleLike() async {
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,8 +50,7 @@ class _PostCardState extends State<PostCard> {
       return;
     }
 
-    DocumentReference postRef = FirebaseFirestore.instance.collection('posts').doc(widget.postId);
-    
+    // Optimistic UI Update (Update screen instantly)
     setState(() {
       if (isLiked) {
         likeCount -= 1;
@@ -68,6 +63,10 @@ class _PostCardState extends State<PostCard> {
       }
     });
 
+    // Update Firebase in background
+    DocumentReference postRef =
+        FirebaseFirestore.instance.collection('posts').doc(widget.postId);
+
     try {
       if (isLiked) {
         await postRef.update({
@@ -79,22 +78,20 @@ class _PostCardState extends State<PostCard> {
         });
       }
     } catch (e) {
-      // Revert UI on failure
+      // If error, revert the change
       setState(() {
         if (isLiked) {
           likeCount -= 1;
           isLiked = false;
-          likes.remove(currentUserId);
         } else {
           likeCount += 1;
           isLiked = true;
-          likes.add(currentUserId);
         }
       });
     }
   }
-  
-  // --- NEW: Function to navigate to comments page ---
+
+  // --- NAVIGATION TO COMMENTS ---
   void _goToComments() {
     Navigator.push(
       context,
@@ -103,61 +100,75 @@ class _PostCardState extends State<PostCard> {
       ),
     );
   }
-  // --- END NEW ---
 
   @override
   Widget build(BuildContext context) {
+    // FIX 1: Handle both 'caption' (new) and 'text' (old) fields
+    final String caption = widget.postData['caption'] ?? widget.postData['text'] ?? '';
+    
+    // FIX 2: Handle missing user email
+    final String userEmail = widget.postData['userEmail'] ?? 'Student';
+    
+    // Handle Timestamp
+    final Timestamp? timestamp = widget.postData['timestamp'] as Timestamp?;
+    final DateTime dateTime = timestamp?.toDate() ?? DateTime.now();
+
+    // FIX 3: Robust Image URL check
     final String? imageUrl = widget.postData['imageUrl'];
-    final String text = widget.postData['text'] ?? '';
-    final String userEmail = widget.postData['userEmail'] ?? 'Anonymous';
-    final DateTime timestamp = (widget.postData['timestamp'] as Timestamp).toDate();
+    // Only show image if it exists AND is a valid web link (starts with http)
+    final bool hasValidImage = imageUrl != null && imageUrl.isNotEmpty && imageUrl.startsWith('http');
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       elevation: 2.0,
-      shape: const RoundedRectangleBorder(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
+          // --- HEADER ---
           ListTile(
             leading: CircleAvatar(
               backgroundColor: Colors.blue.shade100,
-              child: Text(userEmail[0].toUpperCase()),
+              child: const Icon(Icons.person, color: Colors.blue),
             ),
             title: Text(userEmail, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(timeago.format(timestamp)),
+            subtitle: Text(timeago.format(dateTime)),
+            trailing: const Icon(Icons.more_vert),
           ),
 
-          if (imageUrl != null)
-            Image.network(
-              imageUrl,
-              width: double.infinity,
-              fit: BoxFit.fitWidth,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: double.infinity,
-                  height: 300,
-                  color: Colors.grey[200],
-                  child: const Center(child: CircularProgressIndicator()),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: double.infinity,
-                  height: 300,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
-                );
-              },
+          // --- IMAGE POST ---
+          if (hasValidImage)
+            GestureDetector(
+              onDoubleTap: _toggleLike,
+              child: Image.network(
+                imageUrl!,
+                width: double.infinity,
+                height: 300,
+                fit: BoxFit.cover,
+                // Loading Spinner
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 300,
+                    color: Colors.grey[100],
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                },
+                // Error Fallback (Grey Box)
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 300,
+                    color: Colors.grey[200],
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
+                  );
+                },
+              ),
             ),
-          
-          // --- POST ACTIONS ---
+
+          // --- BUTTONS ROW ---
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 IconButton(
                   icon: Icon(
@@ -166,16 +177,20 @@ class _PostCardState extends State<PostCard> {
                   ),
                   onPressed: _toggleLike,
                 ),
-                // --- UPDATE COMMENT BUTTON ---
                 IconButton(
                   icon: const Icon(Icons.comment_outlined, color: Colors.grey),
-                  onPressed: _goToComments, // <-- Call new function
+                  onPressed: _goToComments,
                 ),
-                // --- END UPDATE ---
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.bookmark_border, color: Colors.grey),
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
-          
+
+          // --- LIKE COUNT ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -186,13 +201,25 @@ class _PostCardState extends State<PostCard> {
           
           const SizedBox(height: 8.0),
 
-          if (text.isNotEmpty)
+          // --- CAPTION ---
+          if (caption.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(text, style: const TextStyle(fontSize: 16.0)),
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.black),
+                  children: [
+                    TextSpan(
+                      text: '$userEmail ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: caption),
+                  ],
+                ),
+              ),
             ),
-          
-          // --- NEW: SHOW COMMENT COUNT ---
+
+          // --- VIEW COMMENTS LINK ---
           if (commentCount > 0)
             GestureDetector(
               onTap: _goToComments,
@@ -204,8 +231,7 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
             ),
-          // --- END NEW ---
-          
+
           const SizedBox(height: 16.0),
         ],
       ),

@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart'; // Needed for input formatters
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewSubmissionsPage extends StatefulWidget {
@@ -20,7 +20,7 @@ class ViewSubmissionsPage extends StatefulWidget {
 }
 
 class _ViewSubmissionsPageState extends State<ViewSubmissionsPage> {
-  final _gradeController = TextEditingController();
+  final _marksController = TextEditingController();
 
   // --- Function to launch the file URL ---
   Future<void> _launchFileUrl(String url) async {
@@ -34,34 +34,64 @@ class _ViewSubmissionsPageState extends State<ViewSubmissionsPage> {
     }
   }
 
-  // --- NEW: Function to show the grading pop-up dialog ---
-  Future<void> _showGradeDialog(String submissionId, String currentGrade) async {
-    _gradeController.text = currentGrade; // Pre-fill the text field with the current grade
-    
-    return showDialog<void>(
+  // --- NEW: Function to show the MARKS dialog (0-100) ---
+  Future<void> _showMarkingDialog(String submissionId, String currentGrade) async {
+    // If current grade is "Not Graded", clear the box. Otherwise show the number.
+    _marksController.text = (currentGrade == 'Not Graded') ? '' : currentGrade;
+
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: const Text('Post Mark'),
+          title: const Text('Enter Marks (0-100)'),
           content: TextField(
-            controller: _gradeController,
+            controller: _marksController,
+            keyboardType: TextInputType.number, // <--- Keypad for numbers
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // <--- Only allow digits
+              LengthLimitingTextInputFormatter(3), // <--- Max 3 digits (e.g. 100)
+            ],
             decoration: const InputDecoration(
-              hintText: 'Enter grade (e.g., "A" or "95/100")',
+              hintText: 'e.g., 85',
+              border: OutlineInputBorder(),
+              suffixText: '/ 100', // Shows "/ 100" inside the box
             ),
           ),
-          actions: <Widget>[
+          actions: [
             TextButton(
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
             ),
             ElevatedButton(
-              child: const Text('Submit Mark'),
-              onPressed: () {
-                _submitGrade(submissionId, _gradeController.text);
-                Navigator.of(context).pop();
+              onPressed: () async {
+                String input = _marksController.text.trim();
+                
+                // VALIDATION LOGIC
+                if (input.isEmpty) return;
+
+                int? marks = int.tryParse(input);
+
+                if (marks == null || marks < 0 || marks > 100) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a valid number between 0 and 100'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                // If valid, save to Firestore
+                await FirebaseFirestore.instance
+                    .collection('assignments')
+                    .doc(widget.assignmentId)
+                    .collection('submissions')
+                    .doc(submissionId)
+                    .update({'grade': input}); // Saving as string is fine, or use marks (int)
+
+                if (context.mounted) Navigator.pop(context);
               },
+              child: const Text('Save Marks'),
             ),
           ],
         );
@@ -69,41 +99,11 @@ class _ViewSubmissionsPageState extends State<ViewSubmissionsPage> {
     );
   }
 
-  // --- NEW: Function to save the grade to Firestore ---
-  Future<void> _submitGrade(String submissionId, String grade) async {
-    if (grade.isEmpty) return; // Don't submit an empty grade
-
-    try {
-      // Get the reference to the student's submission document
-      await FirebaseFirestore.instance
-          .collection('assignments')
-          .doc(widget.assignmentId)
-          .collection('submissions')
-          .doc(submissionId) // This is the student's UID
-          .update({
-            'grade': grade,
-            'gradedAt': FieldValue.serverTimestamp(),
-          });
-      
-      if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mark posted successfully!')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post mark: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.assignmentTitle),
+        title: Text('Submissions: ${widget.assignmentTitle}'),
         backgroundColor: Colors.white,
         elevation: 1.0,
       ),
@@ -113,34 +113,11 @@ class _ViewSubmissionsPageState extends State<ViewSubmissionsPage> {
             .collection('assignments')
             .doc(widget.assignmentId)
             .collection('submissions')
-            .orderBy('submittedAt', descending: true)
             .snapshots(),
-            
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          // --- THIS IS THE NEW FIX ---
-          // Check for an error
-          if (snapshot.hasError) {
-            
-            // 1. This prints the FULL link to your VS Code Debug Console
-            print("!!! SUBMISSION INDEX ERROR: ${snapshot.error.toString()}");
-
-            // 2. This is the new, shorter on-screen message
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Error: Missing Database Index.\n\nPlease check your VS Code "DEBUG CONSOLE" for a link to create the index. It starts with "https://console.firebase.google.com..."',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-          // --- END OF NEW FIX ---
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
@@ -151,75 +128,79 @@ class _ViewSubmissionsPageState extends State<ViewSubmissionsPage> {
             );
           }
 
-          // We have submissions!
           return ListView(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(12.0),
             children: snapshot.data!.docs.map((doc) {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-              String submissionId = doc.id; // This is the student's UID
               
-              DateTime submittedAt = (data['submittedAt'] as Timestamp).toDate();
-              String formattedDate = DateFormat('MMM d, h:mm a').format(submittedAt);
-              String currentGrade = data['grade'] ?? ''; // Get the current grade
+              // Get Data
+              String submissionId = doc.id;
+              String studentName = data['studentName'] ?? 'Unknown Student';
+              String fileName = data['fileName'] ?? 'No File';
+              String fileUrl = data['fileUrl'] ?? '';
+              String currentGrade = data['grade'] ?? 'Not Graded';
 
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                margin: const EdgeInsets.only(bottom: 12.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: ListTile(
-                  leading: const Icon(Icons.person, color: Colors.green, size: 40),
-                  title: Text(
-                    data['studentEmail'] ?? 'Unknown Student',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blue.shade100,
+                    child: Text(studentName[0].toUpperCase()),
                   ),
-                  subtitle: Text('Submitted: $formattedDate\nFile: ${data['fileName'] ?? 'No file'}'),
-                  
-                  // --- UPDATED TRAILING WIDGET ---
+                  title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.attach_file, size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              fileName, 
+                              style: const TextStyle(color: Colors.blue),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Marks: $currentGrade / 100', // UPDATED DISPLAY
+                        style: TextStyle(
+                          color: currentGrade == 'Not Graded' ? Colors.orange : Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // View File Button
-                      IconButton(
-                        icon: const Icon(Icons.download_for_offline, color: Colors.blue),
-                        tooltip: 'View File',
-                        onPressed: () {
-                          if (data['fileUrl'] != null) {
-                            _launchFileUrl(data['fileUrl']);
-                          }
-                        },
-                      ),
-                      // Post Mark Button
+                      if (fileUrl.isNotEmpty)
+                        IconButton(
+                          icon: const Icon(Icons.visibility, color: Colors.grey),
+                          tooltip: 'View File',
+                          onPressed: () => _launchFileUrl(fileUrl),
+                        ),
+                      
+                      // Grade Button
                       IconButton(
                         icon: Icon(
-                          Icons.school, 
-                          color: currentGrade.isNotEmpty ? Colors.blue : Colors.grey
+                          Icons.edit_note, // Changed icon to look like grading
+                          color: currentGrade != 'Not Graded' ? Colors.blue : Colors.grey
                         ),
-                        tooltip: 'Post Mark',
+                        tooltip: 'Give Marks',
                         onPressed: () {
-                          // Pass the student's doc ID and current grade
-                          _showGradeDialog(submissionId, currentGrade);
+                          _showMarkingDialog(submissionId, currentGrade);
                         },
                       ),
                     ],
                   ),
-                  // --- END OF UPDATE ---
-
-                  onTap: () {
-                    // Show the student's comment in a dialog
-                    if (data['comment'] != null && data['comment'].isNotEmpty) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Student Comment'),
-                          content: Text(data['comment']),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Close'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  },
                 ),
               );
             }).toList(),
