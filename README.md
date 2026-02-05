@@ -36,7 +36,7 @@ The app provides a completely different, tailored UI depending on the user's rol
 | **Sign Up (with Role Selection)** | **Student Dashboard** | **Teacher Dashboard** |
 | :---: | :---: | :---: |
 | The beautiful login screen includes a toggle that appears during sign-up, allowing users to select their role. | Students get a 4-tab view focused on consuming content, viewing work, and using the AI study tool. | Teachers get a 3-tab view with a center "Create" button, focused on posting assignments and managing grades. |
-| ![IMG-20251031-WA0013](https://github.com/user-attachments/assets/f745b029-74aa-4723-940a-c7d189de7b4a) | ![IMG-20251031-WA0015](https://github.com/user-attachments/assets/610607d1-9312-4e1e-89e0-f5b9f7366ac5) | ![IMG-20251031-WA0024](https://github.com/user-attachments/assets/f93e5b6e-9164-419d-bd8d-3f908df06dd6) |
+| <img width="400" height="844" alt="Screenshot_20260205-112021" src="https://github.com/user-attachments/assets/e346db08-8aee-44fb-825b-d9d7aa1d2623" /> | <img width="400" height="844" alt="Screenshot_20260205-111933" src="https://github.com/user-attachments/assets/4d7f7a0c-f076-4138-b0e5-d3067d7e134a" /> | <img width="400" height="844" alt="Screenshot_20260205-112113" src="https://github.com/user-attachments/assets/f398e786-6683-45c7-bf9e-3fce2716656b" /> |
 
 ### 2. The Social Feed (Posts, Likes & Comments)
 
@@ -48,7 +48,7 @@ A real-time, Instagram-style feed where teachers and students can post updates.
 
 | **Main Feed** | **Comments Page** |
 | :---: | :---: |
-| ![IMG-20251031-WA0033](https://github.com/user-attachments/assets/8712fc85-6e5a-4880-89d6-59b6419c6fa5)  |  ![WhatsApp Image 2025-10-31 at 23 28 26_bd7a08c0](https://github.com/user-attachments/assets/7f570a4c-1823-411c-a872-52138813a5e2)  |
+| <img width="400" height="844" alt="Screenshot_20260205-111933" src="https://github.com/user-attachments/assets/a8268221-48b7-45d9-878c-1deaf68bcc0b" /> |  ![WhatsApp Image 2025-10-31 at 23 28 26_bd7a08c0](https://github.com/user-attachments/assets/7f570a4c-1823-411c-a872-52138813a5e2)  |
 
 ### 3. "Wow" Feature: AI Study Buddy
 
@@ -89,14 +89,15 @@ The teacher's dashboard lists all student submissions for each assignment. They 
 #### 5. Teacher Posts Grade
 The teacher can post a mark (e.g., "A+" or "95/100") directly from the submissions page.
 
-![IMG-20251031-WA0028](https://github.com/user-attachments/assets/2db9fc6e-e6d4-45a9-aa0b-d6a2070a8485)
+<img width="380" height="802" alt="Screenshot_20260205-112131" src="https://github.com/user-attachments/assets/3da2cc9c-f53e-4e6d-a053-3ea6b8119c0d" />
 
 
 
 #### 6. Student Views Grade
 The student can go to their "My Marks" page to see all their grades in one place.
 
-![IMG-20251031-WA0027](https://github.com/user-attachments/assets/b5b2e8e0-696d-4747-bcfd-6cdaa714b13c)
+<img width="331" height="700" alt="Screenshot_20260205-112005" src="https://github.com/user-attachments/assets/49d75d61-3f3b-472e-b6e2-8d596e1213d4" />
+
 
 ## Tinker
  🛠️ Technology Stack
